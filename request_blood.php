@@ -1,5 +1,4 @@
 <?php
-// request_blood.php
 require_once 'config.php';
 $message = '';
 
