@@ -1,38 +1,29 @@
 <?php
-// download_eligibility.php
 require_once 'config.php';
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-
-// Security: User must be logged in
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit;
 }
 
 $user_id = $_SESSION['user_id'];
-
-// Fetch user data
 $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
 $stmt->execute([$user_id]);
 $user = $stmt->fetch();
 
-// Security: Only allow download if they are actually eligible
 if ($user['is_eligible'] != 1) {
     die("You are not currently eligible to download this form.");
 }
 
-// Generate the current date
 $current_date = date("F j, Y");
 
-// --- SET HEADERS TO FORCE WORD DOCUMENT DOWNLOAD ---
 header("Content-type: application/vnd.ms-word");
 header("Content-Disposition: attachment;Filename=Donor_Eligibility_Form.doc");
 header("Pragma: no-cache");
 header("Expires: 0");
 
-// --- BEGIN DOCUMENT CONTENT (HTML structured for Word) ---
 echo "
 <html>
 <meta charset='UTF-8'>
