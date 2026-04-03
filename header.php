@@ -1,6 +1,4 @@
 <?php
-// header.php
-// Start session if it hasn't been started yet
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
