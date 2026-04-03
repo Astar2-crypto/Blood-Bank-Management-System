@@ -1,5 +1,4 @@
 <?php
-// print_eligibility.php
 require_once 'config.php';
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -28,7 +27,7 @@ $current_date = date("F j, Y");
     <meta charset="UTF-8">
     <title>Pre-Donation Eligibility Report</title>
     <style>
-        /* This CSS ensures it looks perfect on an A4 piece of paper or PDF */
+       
         body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
         h2 { color: #d9534f; text-align: center; margin-bottom: 5px; }
         h3 { text-align: center; text-decoration: underline; margin-top: 0; color: #555; }
@@ -39,7 +38,6 @@ $current_date = date("F j, Y");
         .instructions { background-color: #fdf2f2; border-left: 4px solid #d9534f; padding: 15px; margin-top: 30px; }
         .signature-block { margin-top: 50px; display: flex; justify-content: space-between; }
         
-        /* Hides the print button on the actual printed paper/PDF */
         @media print {
             .no-print { display: none !important; }
             body { padding: 0; }
