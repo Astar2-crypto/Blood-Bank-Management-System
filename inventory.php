@@ -1,8 +1,5 @@
 <?php
-// inventory.php
 require_once 'config.php';
-
-// Security Check: Only admins allowed
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     header("Location: login.php");
     exit;
@@ -24,7 +21,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_inventory'])) {
     }
 }
 
-// Fetch Active Inventory Summary (Grouped by Blood Type, excluding expired)
 $summary_stmt = $pdo->query("
     SELECT blood_group, SUM(quantity) as total_units 
     FROM inventory 
@@ -33,7 +29,6 @@ $summary_stmt = $pdo->query("
 ");
 $summary = $summary_stmt->fetchAll();
 
-// Fetch Detailed Inventory Log (To monitor expiry dates)
 $details_stmt = $pdo->query("SELECT * FROM inventory ORDER BY expiry_date ASC");
 $details = $details_stmt->fetchAll();
 
