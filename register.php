@@ -1,5 +1,4 @@
 <?php
-// register.php
 require_once 'config.php';
 
 $message = '';
@@ -15,7 +14,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     
     $sec_a = (strtolower(trim($_POST['security_answer'])));
 
-    // Eligibility Check (Obj 7)
     $is_eligible = ($age >= 18 && $age <= 65 && $weight > 50) ? 1 : 0;
 
     if ($is_eligible == 0) {
