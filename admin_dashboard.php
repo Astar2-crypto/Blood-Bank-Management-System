@@ -1,8 +1,6 @@
 <?php
-// admin_dashboard.php
 require_once 'config.php';
 
-// Security Check: Only admins allowed
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -13,24 +11,22 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
 $message = '';
 
-// Handle Approval/Rejection actions
 if (isset($_GET['action']) && isset($_GET['id'])) {
     $id = $_GET['id'];
     $action = $_GET['action'];
 
     if ($action == 'reject') {
-        // Simple rejection
+        
         $stmt = $pdo->prepare("UPDATE hospital_requests SET status = 'rejected' WHERE id = ?");
         if ($stmt->execute([$id])) {
             $message = "<div class='alert alert-success'>Request rejected successfully.</div>";
         }
     } elseif ($action == 'approve') {
-        // Complex Approval: FIFO Inventory Deduction
+        
         try {
-            // Start Transaction to ensure data safety
+            
             $pdo->beginTransaction();
 
-            // 1. Get the details of what the hospital requested
             $stmt = $pdo->prepare("SELECT blood_group, units_requested FROM hospital_requests WHERE id = ? AND status = 'pending'");
             $stmt->execute([$id]);
             $req = $stmt->fetch();
@@ -38,14 +34,11 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
             if ($req) {
                 $bg = $req['blood_group'];
                 $units_needed = $req['units_requested'];
-
-                // 2. Check if we have enough total unexpired stock
                 $check_stmt = $pdo->prepare("SELECT SUM(quantity) FROM inventory WHERE blood_group = ? AND expiry_date >= CURDATE()");
                 $check_stmt->execute([$bg]);
                 $total_available = $check_stmt->fetchColumn();
 
                 if ($total_available >= $units_needed) {
-                    // 3. FIFO Logic: Get unexpired batches ordered by oldest expiry date first
                     $batch_stmt = $pdo->prepare("SELECT id, quantity FROM inventory WHERE blood_group = ? AND expiry_date >= CURDATE() AND quantity > 0 ORDER BY expiry_date ASC");
                     $batch_stmt->execute([$bg]);
                     $batches = $batch_stmt->fetchAll();
@@ -53,29 +46,24 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
                     foreach ($batches as $batch) {
                         if ($units_needed <= 0) break; // Stop if we've fulfilled the request
 
-                        if ($batch['quantity'] >= $units_needed) {
-                            // This batch has enough to fulfill the rest of the request
+                        if ($batch['quantity'] >= $units_needed) 
                             $new_qty = $batch['quantity'] - $units_needed;
                             $update_stmt = $pdo->prepare("UPDATE inventory SET quantity = ? WHERE id = ?");
                             $update_stmt->execute([$new_qty, $batch['id']]);
                             $units_needed = 0; 
                         } else {
-                            // This batch doesn't have enough on its own, take all of it and move to the next batch
+                           
                             $units_needed -= $batch['quantity'];
                             $update_stmt = $pdo->prepare("UPDATE inventory SET quantity = 0 WHERE id = ?");
                             $update_stmt->execute([$batch['id']]);
                         }
                     }
 
-                    // 4. Mark the request as Approved
                     $approve_stmt = $pdo->prepare("UPDATE hospital_requests SET status = 'approved' WHERE id = ?");
                     $approve_stmt->execute([$id]);
-
-                    // Commit the transaction (Save all changes)
                     $pdo->commit();
                     $message = "<div class='alert alert-success'>Request approved! The required units have been deducted from the oldest safe inventory batches.</div>";
                 } else {
-                    // Not enough stock
                     $pdo->rollBack();
                     $message = "<div class='alert alert-error'>Approval Failed: Not enough safe stock available to fulfill this request.</div>";
                 }
@@ -84,14 +72,12 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
                 $message = "<div class='alert alert-error'>Invalid request or already processed.</div>";
             }
         } catch (Exception $e) {
-            // If anything fails, undo everything
             $pdo->rollBack();
             $message = "<div class='alert alert-error'>System Error: Could not process the approval.</div>";
         }
     }
 }
 
-// Fetch all requests
 $stmt = $pdo->query("SELECT * FROM hospital_requests ORDER BY request_date DESC");
 $requests = $stmt->fetchAll();
 
