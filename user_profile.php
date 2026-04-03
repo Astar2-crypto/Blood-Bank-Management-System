@@ -1,8 +1,6 @@
 <?php
-// user_profile.php
 require_once 'config.php';
 
-// Security Check: Must be logged in
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -14,18 +12,15 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id'];
 $message = '';
 
-// Handle Profile Update
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_profile'])) {
     $age = $_POST['age'];
     $weight = $_POST['weight'];
     
-    // Capture the new medical questions
     $meds = $_POST['long_term_meds'];
     $infection = $_POST['blood_infection'];
     $tattoos = $_POST['tattoos'];
     $surgery = $_POST['major_surgery'];
     
-    // Recalculate eligibility: Must meet Age/Weight AND answer 'No' to all medical risks
     if ($age >= 18 && $age <= 65 && $weight > 50 && $meds === 'No' && $infection === 'No' && $tattoos === 'No' && $surgery === 'No') {
         $is_eligible = 1;
     } else {
@@ -38,12 +33,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_profile'])) {
     }
 }
 
-// Fetch current user details from database
 $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
 $stmt->execute([$user_id]);
 $user = $stmt->fetch();
 
-// Helper function to easily select the right dropdown option
 function isSelected($db_value, $option_value) {
     return ($db_value === $option_value) ? 'selected' : '';
 }
