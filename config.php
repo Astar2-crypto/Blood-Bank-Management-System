@@ -1,5 +1,4 @@
 <?php
-// config.php
 session_start();
 $host = 'localhost';
 $dbname = 'bloodsystem';
