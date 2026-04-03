@@ -1,10 +1,8 @@
 <?php
-// reset_password.php
 require_once 'config.php';
 $step = 1;
 $message = '';
 
-// Step 1: Submit Email to get the Question
 if (isset($_POST['verify_email'])) {
     $email = trim($_POST['email']);
     $stmt = $pdo->prepare("SELECT security_question FROM users WHERE email = ?");
@@ -20,7 +18,6 @@ if (isset($_POST['verify_email'])) {
     }
 }
 
-// Step 2: Answer the question and reset password
 if (isset($_POST['reset_pwd'])) {
     $answer = strtolower(trim($_POST['security_answer']));
     $new_password =$_POST['new_password'];
